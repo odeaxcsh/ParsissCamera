@@ -1,0 +1,30 @@
+Tool Type:            2
+Tool Subtype:         1
+Tool Revision:        0
+Tool Date:            2011/09/20
+Seq Number:           007
+Max Angle:            90
+Num Markers:          4
+Min Markers:          4
+Max 3D Error:         1.00
+Min Spread 1:         0.00
+Min Spread 2:         0.00
+Min Spread 3:         0.00
+Manufacturer:         parsiss     
+Part Number:          nav340              
+Enhanced Alg Flags:   128
+Marker type:          41
+
+Marker Positions
+----------------
+    -0.00        0.00        0.00
+    -0.00       -0.00       50.00
+    -0.00       25.00      100.00
+    -0.00      -25.00      135.00
+
+Marker Normals
+--------------
+   1.0000      0.0000      0.0000
+   1.0000      0.0000      0.0000
+   1.0000      0.0000      0.0000
+   1.0000      0.0000      0.0000

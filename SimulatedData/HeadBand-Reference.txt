@@ -1,0 +1,28 @@
+Tool Type:            1
+Tool Subtype:         3
+Tool Revision:        0
+Tool Date:            2014/12/03
+Seq Number:           002
+Max Angle:            90
+Num Markers:          3
+Min Markers:          3
+Max 3D Error:         0.75
+Min Spread 1:         0.00
+Min Spread 2:         0.00
+Min Spread 3:         0.00
+Manufacturer:         parsis      
+Part Number:          HeadBandRef         
+Enhanced Alg Flags:   128
+Marker type:          41
+
+Marker Positions
+----------------
+     0.00       29.00       47.26
+    -0.00       89.18        0.00
+    -0.00        0.00        0.00
+
+Marker Normals
+--------------
+   1.0000      0.0000      0.0000
+   1.0000      0.0000      0.0000
+   1.0000      0.0000      0.0000
