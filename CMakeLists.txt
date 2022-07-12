@@ -22,6 +22,8 @@ set(PUBLIC_INCLUDE_DIRS "Utils" "DataStructures" "${VTK_INCLUDE_DIRS}")
 file(GLOB HEADERS "DataStructures/*.h" "DataStructures/*.hpp" "Utils/*.h" "*.h")
 file(GLOB SOURCES "DataStructures/*.[ch]pp" "Utils/*.cpp" "*.cpp")
 
+list(FILTER SOURCES EXCLUDE REGEX ".*SimulatedTest.cpp")
+
 add_library(ParsissCameraLib STATIC ${SOURCES})
 
 target_include_directories(ParsissCameraLib PUBLIC ${PUBLIC_INCLUDE_DIRS})
