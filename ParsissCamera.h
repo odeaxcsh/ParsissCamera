@@ -15,9 +15,12 @@ namespace parsiss
 class ParsissCamera
 {
 public:
+    ParsissCamera();
     ParsissCamera(ParsissCommunication *communication);
     ~ParsissCamera();
 
+    ParsissCamera &setCommunication(ParsissCommunication *communication);
+    
     ParsissCamera &registerTool(const ParsissTool *tool);
     ParsissCamera &removeTool(const std::string &tool_name);
 

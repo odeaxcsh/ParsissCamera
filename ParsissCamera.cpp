@@ -5,14 +5,29 @@
 namespace parsiss
 {
 
+
+ParsissCamera::ParsissCamera()
+{
+    communication = nullptr;
+}
+
 ParsissCamera::ParsissCamera(ParsissCommunication *communication)
 {
-    this->communication = communication;
+    this->setCommunication(communication);
 }
+
 
 ParsissCamera::~ParsissCamera()
 {
 }
+
+
+ParsissCamera &ParsissCamera::setCommunication(ParsissCommunication *communication)
+{
+    this->communication = communication;
+    return *this;
+}
+
 
 ParsissCamera &ParsissCamera::registerTool(const ParsissTool *tool)
 {
