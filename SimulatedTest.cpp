@@ -1,14 +1,14 @@
 #include "ParsissCamera.h"
 #include "ParsissSimulatedCommunication.h"
 
-#include "configuration.h"
+#include "ParsissCameraConfiguration.h"
 
 #include <iostream>
 
 
 std::string translate_path(std::string path)
 {
-    return std::string(ROOT_PROJECT_PATH) + "/" + path;
+    return std::string(SIMULATED_DATA_ROOT) + "/" + path;
 }
 
 
@@ -18,7 +18,7 @@ int main()
 
     auto _ = translate_path;
 
-    auto *communication = new ParsissSimulatedCommunication(_("SimulatedData/points.csv"));
+    auto *communication = new ParsissSimulatedCommunication(_("/points.csv"));
     auto camera = ParsissCamera(communication);
 
     const char *tools_name[] = {
@@ -33,7 +33,7 @@ int main()
     for (int i = 0; i < 5; i++) {
         tools.push_back(new ParsissTool(
             tools_name[i],
-            _(std::string("SimulatedData/converted/")) + tools_name[i] + std::string(".txt")
+            _(std::string("converted/")) + tools_name[i] + std::string(".txt")
         ));
     }
 

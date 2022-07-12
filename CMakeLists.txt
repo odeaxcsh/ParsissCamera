@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(GraphTest VERSION 0.1.0)
+
+project(ParsissCamera VERSION 0.1.0)
 
 set(CXX_STANDARD "c++17")
 add_compile_options("/std:c++17")
@@ -14,22 +15,35 @@ if(NOT VTK_FOUND)
 endif()
 
 
-configure_file(configuration.h.in configuration.h)
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+configure_file(configuration.h.in "${CMAKE_CURRENT_SOURCE_DIR}/ParsissCameraConfiguration.h")
 
-file(GLOB DSSRC "DataStructures/*.[hc]pp")
-file(GLOB SOURCES "*.cpp")
+set(PUBLIC_INCLUDE_DIRS "Utils" "DataStructures" "${VTK_INCLUDE_DIRS}")
 
-add_executable(GraphTest main.cpp ${DSSRC} ${SOURCES} "Utils/StringUtils.cpp")
+file(GLOB HEADERS "DataStructures/*.h" "DataStructures/*.hpp" "Utils/*.h" "*.h")
+file(GLOB SOURCES "DataStructures/*.[ch]pp" "Utils/*.cpp" "*.cpp")
+
+add_library(ParsissCameraLib STATIC ${SOURCES})
+
+target_include_directories(ParsissCameraLib PUBLIC ${PUBLIC_INCLUDE_DIRS})
+target_include_directories(ParsissCameraLib PRIVATE ${VTK_INCLUDE_DIRS})
+
+target_link_libraries(ParsissCameraLib PUBLIC ${VTK_LIBRARIES})
+
+add_executable(SimulatedTest SimulatedTest.cpp)
+target_link_libraries(SimulatedTest ParsissCameraLib)
+target_include_directories(SimulatedTest PUBLIC ${PUBLIC_INCLUDE_DIRS})
 
 
-target_include_directories(GraphTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/DataStructures")
-target_include_directories(GraphTest PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Utils")
-target_include_directories(GraphTest PUBLIC "${VTK_INCLUDE_DIRS}")
+set_target_properties(
+  ParsissCameraLib
+  PROPERTIES
+  PUBLIC_HEADER "${HEADERS}"
+)
 
-target_link_libraries(GraphTest PUBLIC ${VTK_LIBRARIES})
-
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/Library")
+INSTALL(
+  TARGETS ParsissCameraLib SimulatedTest
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  PUBLIC_HEADER DESTINATION include
+)
