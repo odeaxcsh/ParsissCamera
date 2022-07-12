@@ -69,6 +69,16 @@ void Graph::removeEdge(const Edge& edge)
     adjacency_list[map(edge.to)].erase(std::find(adjacency_list[map(edge.to)].begin(), adjacency_list[map(edge.to)].end(), edge));
 }
 
+Edge Graph::getEdge(const Vertex& from, const Vertex& to) const
+{
+    for (const Edge& edge : adjacency_list[map(from)]) {
+        if (edge.from == from && edge.to == to || edge.from == to && edge.to == from) {
+            return edge;
+        }
+    }
+    return Edge({ -1, -1, -1 });
+}
+
 int Graph::degree(const Vertex& vertex) const
 {
     return adjacency_list[map(vertex)].size();
@@ -81,6 +91,17 @@ std::vector<Vertex> Graph::neighbors(const Vertex& vertex) const
         neighbors.push_back(edge.from == vertex ? edge.to : edge.from);
     }
     return neighbors;
+}
+
+Vertex Graph::getNextVertex(const Vertex& vertex) const
+{
+    int index = map(vertex);
+    for(int i = index + 1; i < n; i++) {
+        if (vertex_map[i] != -1) {
+            return Vertex(i);
+        }
+    }
+    return Vertex(-1);
 }
 
 std::vector<Vertex> Graph::vertices() const

@@ -3,6 +3,8 @@
 #include "ParsissTool.h"
 #include "ParsissCommunication.h"
 #include "Transformation.h"
+#include "Graph.h"
+
 
 #include <map>
 
@@ -24,19 +26,20 @@ public:
     virtual ~ToolDetection();
 
 
-    virtual std::map<std::string, ToolStatus> getDetectedTools() const;
+    virtual std::map<std::string, ToolStatus> getToolsStatus() const;
 
     virtual ToolDetection &detect(const Frame &frame);
 
 
 private:
-
-    std::map<std::string, ToolStatus> tools_status;
-    ToolContainer tools;
+    std::map<Vertex, Vertex> findPattern(const std::vector<Point3D> &frame, const std::string &tool);
 
 
 private:
-    std::vector<int> findToolInTheFrame(const Frame &frame, const ParsissTool &tool);
+    std::map<std::string, ToolStatus> tools_status;
+    ToolContainer tools;
+    std::map<std::string, Graph> tools_graphs;
+    std::map<std::string, std::vector<double>> weights;
 };
 
 }

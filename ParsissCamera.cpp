@@ -1,4 +1,6 @@
 #include "ParsissCamera.h"
+#include "ParsissToolDetection.h"
+
 
 namespace parsiss
 {
@@ -10,7 +12,6 @@ ParsissCamera::ParsissCamera(ParsissCommunication *communication)
 
 ParsissCamera::~ParsissCamera()
 {
-    delete communication;
 }
 
 ParsissCamera &ParsissCamera::registerTool(const ParsissTool *tool)
@@ -26,15 +27,21 @@ ParsissCamera &ParsissCamera::removeTool(const std::string &tool_name)
 }
 
 
-ParsissCamera &ParsissCamera::update()
+bool ParsissCamera::update()
 {
-    this->current_frame = communication->getNextFrame();
+    if(communication->connectionClosed()) {
+        return false;
+    }
 
-    // auto td = ToolDetection(current_frame, tools).detect();
-
-    return *this;
+    current_frame = communication->getNextFrame();
+    tools_status = ToolDetection(tools).detect(current_frame).getToolsStatus();
+    return true;
 }
 
 
+ToolStatus ParsissCamera::getToolStatus(const std::string &tool_name) const
+{
+    return tools_status.at(tool_name);
+}
 
 }

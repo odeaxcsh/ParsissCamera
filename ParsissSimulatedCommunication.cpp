@@ -36,7 +36,7 @@ ParsissSimulatedCommunication::~ParsissSimulatedCommunication()
 
 bool ParsissSimulatedCommunication::connectionClosed()
 {
-    return simulation_file.eof();
+    return !simulation_file.good();
 }
 
 

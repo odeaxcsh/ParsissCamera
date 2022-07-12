@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <vector>
 #include <tuple>
 #include <stdexcept>
@@ -47,13 +48,12 @@ public:
 
 
 private:
-    double* data;
+    std::array<double, n*m> data;
 };
 
 template <unsigned int n, unsigned int m>
 Matrix<n, m>::Matrix()
 {
-    data = new double[n * m];
     for (unsigned int i = 0; i < n * m; i++) {
         data[i] = 0;
     }
@@ -63,7 +63,6 @@ Matrix<n, m>::Matrix()
 template <unsigned int n, unsigned int m>
 Matrix<n, m>::Matrix(const Matrix& other)
 {
-    data = new double[n * m];
     for (unsigned int i = 0; i < n * m; i++) {
         data[i] = other.data[i];
     }
@@ -73,7 +72,6 @@ Matrix<n, m>::Matrix(const Matrix& other)
 template <unsigned int n, unsigned int m>
 Matrix<n, m>::Matrix(const std::vector<double>& data)
 {
-    this->data = new double[n * m];
     for (unsigned int i = 0; i < n * m; i++) {
         this->data[i] = data[i];
     }
@@ -83,7 +81,6 @@ Matrix<n, m>::Matrix(const std::vector<double>& data)
 template <unsigned int n, unsigned int m>
 Matrix<n, m>::~Matrix()
 {
-    delete[] data;
 }
 
 
