@@ -5,12 +5,6 @@
 namespace parsiss
 {
 
-
-ParsissCamera::ParsissCamera()
-{
-    communication = nullptr;
-}
-
 ParsissCamera::ParsissCamera(ParsissCommunication *communication)
 {
     this->setCommunication(communication);

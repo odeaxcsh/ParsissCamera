@@ -14,7 +14,6 @@ namespace parsiss
 class ParsissCamera
 {
 public:
-    ParsissCamera();
     ParsissCamera(ParsissCommunication *communication);
     ~ParsissCamera();
 
