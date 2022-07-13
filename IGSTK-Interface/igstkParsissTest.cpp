@@ -75,10 +75,8 @@ int main(int argc, char* argv[])
     std::vector<igstk::ParsissTrackerTool::Pointer> tracker_tools;
     std::vector< ObserverType::Pointer> observers;
 
-
     tracker->RequestOpen();
 
-	
     for (int i = 0; i < 5; ++i) {
         igstk::ParsissTrackerTool::Pointer tool = igstk::ParsissTrackerTool::New();
         tracker_tools.push_back(tool);
@@ -92,35 +90,28 @@ int main(int argc, char* argv[])
         tool->RequestAttachToTracker(tracker);
     }
 
-   
-
 
     tracker->RequestStartTracking();
 
-    typedef igstk::Transform            TransformType;
-    typedef ::itk::Vector<double, 3>    VectorType;
-    typedef ::itk::Versor<double>       VersorType;
+    typedef igstk::Transform TransformType;
+    typedef ::itk::Vector<double, 3> VectorType;
+    typedef ::itk::Versor<double> VersorType;
 
-
-    for (unsigned int i = 0; i < 1000000; i++)
-    {
+    for (unsigned int i = 0; i < 1000000; i++) {
         igstk::PulseGenerator::CheckTimeouts();
 
-        TransformType             transform;
-        VectorType                position;
+        TransformType transform;
+        VectorType position;
 
-        for(int i = 0; i < 5; i++)
-		{
+        for(int i = 0; i < 5; i++) {
             auto coordSystemAObserver = observers[i];
 			auto trackerTool = tracker_tools[i];
 			
             coordSystemAObserver->Clear();
             trackerTool->RequestGetTransformToParent();
-            if (coordSystemAObserver->GotTransform())
-            {
+            if (coordSystemAObserver->GotTransform()) {
                 transform = coordSystemAObserver->GetTransform();
-                if (transform.IsValidNow())
-                {
+                if (transform.IsValidNow()) {
                     position = transform.GetTranslation();
                     std::cout << "Trackertool :"
                         << trackerTool->GetTrackerToolIdentifier()
@@ -129,7 +120,7 @@ int main(int argc, char* argv[])
                         << ")" << std::endl;
                 }
             }
-		}
+        }
     }
 
     std::cout << "RequestStopTracking()" << std::endl;
