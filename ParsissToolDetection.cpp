@@ -19,7 +19,7 @@ ToolDetection::ToolDetection(const ToolContainer &tools)
 {
     this->tools = tools;
     for (auto &tool : tools) {
-        tools_status[tool.first] = {false, Transformation()};
+        tools_status[tool.first] = ToolStatus(false, vtkMatrix4x4::New());
     }
 
     for(auto [name, tool] : tools) {
@@ -47,20 +47,7 @@ std::map<std::string, ToolStatus> ToolDetection::getToolsStatus() const
 }
 
 
-Transformation convertVTKTransformation(vtkLandmarkTransform *transform)
-{
-    Transformation transformation;
-    auto matrix = transform->GetMatrix();
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            transformation(i, j) = matrix->GetElement(i, j);
-        }
-    }
-    return transformation;
-}
-
-
-Transformation registerPointsTransformation(const Points3D &from, const Points3D &to)
+vtkMatrix4x4 *registerPointsTransformation(const Points3D &from, const Points3D &to)
 {
     if(from.size() != to.size()) {
         throw std::runtime_error("Points size mismatch");
@@ -80,10 +67,9 @@ Transformation registerPointsTransformation(const Points3D &from, const Points3D
     registration->Modified();
     registration->Update();
 
-    return convertVTKTransformation(registration);
+    return registration->GetMatrix();
 }
 
-#include <iostream>
 
 std::vector<Edge> labelDistances(const std::vector<Point3D> &points, std::vector<double> &weights, double precision)
 {
@@ -191,7 +177,7 @@ ToolDetection &ToolDetection::detect(const Frame &frame)
 
             tools_status[name] = ToolStatus({true, registerPointsTransformation(tool->getPattern(), tool_points)});
         } else {
-            tools_status[name] = {false, Transformation()};
+            tools_status[name] = {false, vtkMatrix4x4::New()};
         }
     }
     return *this;

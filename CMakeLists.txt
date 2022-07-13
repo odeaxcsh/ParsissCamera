@@ -35,7 +35,6 @@ add_executable(SimulatedTest SimulatedTest.cpp)
 target_link_libraries(SimulatedTest ParsissCameraLib)
 target_include_directories(SimulatedTest PUBLIC ${PUBLIC_INCLUDE_DIRS})
 
-
 set_target_properties(
   ParsissCameraLib
   PROPERTIES

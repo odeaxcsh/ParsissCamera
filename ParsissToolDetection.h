@@ -2,8 +2,10 @@
 
 #include "ParsissTool.h"
 #include "ParsissCommunication.h"
-#include "Transformation.h"
 #include "Graph.h"
+
+
+#include "vtkMatrix4x4.h"
 
 
 #include <map>
@@ -14,7 +16,10 @@ namespace parsiss
 struct ToolStatus
 {
     bool visible;
-    Transformation transformation;
+    vtkMatrix4x4 *transformation;
+
+    ToolStatus() : visible(false), transformation(nullptr) {}
+    ToolStatus(bool visible, vtkMatrix4x4 *transformation) : visible(visible), transformation(transformation) {}
 };
 
 using ToolContainer = std::map<std::string, const ParsissTool *>;

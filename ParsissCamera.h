@@ -2,7 +2,6 @@
 
 #include "ParsissCommunication.h"
 #include "ParsissTool.h"
-#include "Transformation.h"
 #include "ParsissToolDetection.h"
 
 #include <map>
@@ -20,9 +19,11 @@ public:
     ~ParsissCamera();
 
     ParsissCamera &setCommunication(ParsissCommunication *communication);
-    
+
     ParsissCamera &registerTool(const ParsissTool *tool);
     ParsissCamera &removeTool(const std::string &tool_name);
+
+    std::map<std::string, const ParsissTool *> getTools() const;
 
     bool update();
 

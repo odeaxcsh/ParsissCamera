@@ -42,6 +42,12 @@ ParsissCamera &ParsissCamera::removeTool(const std::string &tool_name)
 }
 
 
+std::map<std::string, const ParsissTool *> ParsissCamera::getTools() const
+{
+    return tools;
+}
+
+
 bool ParsissCamera::update()
 {
     if(communication->connectionClosed()) {
