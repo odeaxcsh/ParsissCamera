@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>ParsissCamera</id>
+        <version>1.0.0</version>
+        <description>ParsissCamera SDK</description>
+        <tags>Native, native</tags>
+        <authors>Odeaxcsh</authors>
+    </metadata>
+    <files>
+        <file src="include\*.h" target="build\include"/>
+        <file src="lib\*.lib" target="build\lib"/>
+        <file src="ParsissCamera.props" target="build"/>
+    </files>
+</package>

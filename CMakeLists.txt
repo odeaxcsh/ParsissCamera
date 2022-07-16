@@ -42,9 +42,14 @@ set_target_properties(
 )
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/Library")
-INSTALL(
+install(
   TARGETS ParsissCameraLib SimulatedTest
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   PUBLIC_HEADER DESTINATION include
+)
+
+install(
+  DIRECTORY "nuget/"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}"
 )
