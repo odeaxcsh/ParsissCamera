@@ -5,40 +5,25 @@
 namespace parsiss
 {
 
-ParsissCamera::ParsissCamera(ParsissCommunication *communication)
+ParsissCamera::ParsissCamera(std::unique_ptr<ParsissCommunication> communication)
 {
-    this->setCommunication(communication);
+    this->communication = std::move(communication);
+    this->td = std::make_unique<ToolDetection>();
 }
-
 
 ParsissCamera::~ParsissCamera()
 {
 }
 
-
-ParsissCamera &ParsissCamera::setCommunication(ParsissCommunication *communication)
+bool ParsissCamera::registerTool(std::unique_ptr<const ParsissTool> tool)
 {
-    this->communication = communication;
-    return *this;
+    return td->registerTool(std::move(tool));
 }
 
-
-ParsissCamera &ParsissCamera::registerTool(const ParsissTool *tool)
+bool ParsissCamera::removeTool(const std::string &tool_name)
 {
-    tools[tool->getName()] = tool;
-    return *this;
-}
+    return td->removeTool(tool_name);
 
-ParsissCamera &ParsissCamera::removeTool(const std::string &tool_name)
-{
-    tools.erase(tool_name);
-    return *this;
-}
-
-
-std::map<std::string, const ParsissTool *> ParsissCamera::getTools() const
-{
-    return tools;
 }
 
 
@@ -49,7 +34,7 @@ bool ParsissCamera::update()
     }
 
     current_frame = communication->getNextFrame();
-    tools_status = ToolDetection(tools).detect(current_frame).getToolsStatus();
+    tools_status = td->getToolsStatus(current_frame);
     return true;
 }
 

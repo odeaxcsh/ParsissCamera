@@ -6,6 +6,7 @@
 #include "vtkMatrix4x4.h"
 #include "vtkPoints.h"
 #include "vtkLandmarkTransform.h"
+#include "vtkSmartPointer.h"
 
 #include <vector>
 #include <functional>
@@ -15,24 +16,8 @@
 namespace parsiss
 {
 
-ToolDetection::ToolDetection(const ToolContainer &tools)
+ToolDetection::ToolDetection()
 {
-    this->tools = tools;
-    for (auto &tool : tools) {
-        tools_status[tool.first] = ToolStatus(false, vtkMatrix4x4::New());
-    }
-
-    for(auto [name, tool] : tools) {
-        const auto &pattern = tool->getPattern();
-        int n = pattern.size();
-        tools_graphs[name] = Graph(n);
-        for(int i = 0; i < n; i++) {
-            for(int j = i + 1; j < n; j++) {
-                weights[name].push_back(pattern[i].distance(pattern[j]));
-                tools_graphs[name].addEdge({i, j, static_cast<int> (weights[name].size() - 1)});
-            }
-        }
-    }
 }
 
 
@@ -41,10 +26,43 @@ ToolDetection::~ToolDetection()
 }
 
 
-std::map<std::string, ToolStatus> ToolDetection::getToolsStatus() const
+bool ToolDetection::registerTool(std::unique_ptr<const ParsissTool> tool)
 {
-    return tools_status;
+    if (tools.find(tool->getName()) != tools.end()) {
+        return false;
+    }
+    const auto &pattern = tool->getPattern();
+    int n = pattern.size();
+    auto tool_graph  = Graph(n);
+    std::vector<double> tool_weights;
+
+    int label = 0;
+    for(int i = 0; i < n; i++) {
+        for(int j = i + 1; j < n; j++) {
+            tool_weights.push_back(pattern[i].distance(pattern[j]));
+            tool_graph.addEdge({i, j, label++});
+        }
+    }
+
+    tools_graphs[tool->getName()] = std::move(tool_graph);
+    weights[tool->getName()] = std::move(tool_weights);
+    tools[tool->getName()] = std::move(tool);
+
+    return true;
 }
+
+
+bool ToolDetection::removeTool(const std::string &tool_name)
+{
+    if (tools.find(tool_name) == tools.end()) {
+        return false;
+    }
+    tools.erase(tool_name);
+    tools_graphs.erase(tool_name);
+    weights.erase(tool_name);
+    return true;
+}
+
 
 
 vtkMatrix4x4 *registerPointsTransformation(const Points3D &from, const Points3D &to)
@@ -53,25 +71,27 @@ vtkMatrix4x4 *registerPointsTransformation(const Points3D &from, const Points3D 
         throw std::runtime_error("Points size mismatch");
     }
 
-    vtkPoints *from_vtk = vtkPoints::New();
-    vtkPoints *to_vtk = vtkPoints::New();
+    vtkSmartPointer<vtkPoints> from_vtk = vtkPoints::New();
+    vtkSmartPointer<vtkPoints> to_vtk = vtkPoints::New();
     for(int i = 0; i < from.size(); i++) {
         from_vtk->InsertNextPoint(from[i].x, from[i].y, from[i].z);
         to_vtk->InsertNextPoint(to[i].x, to[i].y, to[i].z);
     }
 
-    auto *registration = vtkLandmarkTransform::New();
+    vtkSmartPointer<vtkLandmarkTransform> registration = vtkLandmarkTransform::New();
     registration->SetSourceLandmarks(from_vtk);
     registration->SetTargetLandmarks(to_vtk);
     registration->SetModeToRigidBody();
     registration->Modified();
     registration->Update();
 
-    return registration->GetMatrix();
+    auto transformation = vtkMatrix4x4::New();
+    registration->GetMatrix(transformation);
+    return transformation;
 }
 
 
-std::vector<Edge> labelDistances(const std::vector<Point3D> &points, std::vector<double> &weights, double precision)
+std::vector<Edge> labelDistances(const std::vector<Point3D> &points, const std::vector<double> &weights, double precision)
 {
     std::vector<Edge> result;
     for(int i = 0; i < points.size(); i++) {
@@ -154,33 +174,34 @@ std::map<Vertex, Vertex> findSubgraphs(const Graph &g, const Graph &h)
 }
 
 
-std::map<Vertex, Vertex> ToolDetection::findPattern(const std::vector<Point3D> &frame, const std::string &tool)
+std::map<Vertex, Vertex> ToolDetection::findPattern(const std::vector<Point3D> &frame, const std::string &tool) const
 {
-    auto edges = labelDistances(frame, weights[tool], 1);
+    const auto &edges = labelDistances(frame, weights.at(tool), 1);
     auto g = Graph(frame.size(), edges);
-    eliminateVertices(g, tools_graphs[tool].size() - 1);
-    auto mapping = findSubgraphs(g, tools_graphs[tool]);
+    eliminateVertices(g, tools_graphs.at(tool).size() - 1);
+    auto mapping = findSubgraphs(g, tools_graphs.at(tool));
     return mapping;
 }
 
 
-ToolDetection &ToolDetection::detect(const Frame &frame)
+std::map<std::string, ToolStatus> ToolDetection::getToolsStatus(const Frame &frame) const
 {
+    std::map<std::string, ToolStatus> result;
     for (auto &[name, tool] : tools) {
         auto mapping = findPattern(frame, name);
     
         if (mapping.size() > 0) {
-            Points3D tool_points(tools[name]->getPattern().size());
+            Points3D tool_points(tools.at(name)->getPattern().size());
             for(auto [key, value] : mapping) {
                 tool_points[value.label] = frame[key.label];
             }
 
-            tools_status[name] = ToolStatus({true, registerPointsTransformation(tool->getPattern(), tool_points)});
+            result[name] = ToolStatus(true, registerPointsTransformation(tool->getPattern(), tool_points));
         } else {
-            tools_status[name] = {false, vtkMatrix4x4::New()};
+            result[name] = ToolStatus(false, vtkMatrix4x4::New());
         }
     }
-    return *this;
+    return result;
 }
 
 

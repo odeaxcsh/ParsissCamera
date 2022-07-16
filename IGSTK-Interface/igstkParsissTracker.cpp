@@ -33,14 +33,9 @@ Tracker::ResultType ParsissTracker::InternalStopTracking(void)
 
 Tracker::ResultType ParsissTracker::InternalUpdateStatus(void)
 {
-    auto tools = camera->getTools();
     TrackerToolsContainerType trackerToolContainer = this->GetTrackerToolContainer();
     
     buffer_lock.lock();
-    for (auto it = tools.begin(); it != tools.end(); ++it) {
-        auto x = camera->getToolStatus(it->first);
-    }
-    
     for (const auto tool : trackerToolContainer) {
         auto &toolname = tool.first;
         auto& tool_status = camera->getToolStatus(toolname);
@@ -76,9 +71,9 @@ ParsissTracker::ResultType ParsissTracker::VerifyTrackerToolInformation(const Tr
     return SUCCESS;
 }
 
-ParsissTracker& ParsissTracker::setParsissCamera(parsiss::ParsissCamera* camera)
+ParsissTracker& ParsissTracker::setParsissCamera(std::unique_ptr<parsiss::ParsissCamera> camera)
 {
-    this->camera = camera;
+    this->camera = std::move(camera);
     return *this;
 }
 
@@ -94,11 +89,11 @@ ParsissTracker::ResultType ParsissTracker::AddTrackerToolToInternalDataContainer
 
     std::cout << "Adding tool " << parsiss_tracker_tool->GetTrackerToolIdentifier() << std::endl;
 
-    auto tracker = new parsiss::ParsissTool(
+    std::unique_ptr<parsiss::ParsissTool> tool (new parsiss::ParsissTool(
         parsiss_tracker_tool->GetTrackerToolIdentifier(),
         parsiss_tracker_tool->GetTrackerPatternFile()
-    );
-    camera->registerTool(tracker);
+    ));
+    camera->registerTool(std::move(tool));
     return SUCCESS;
 }
 

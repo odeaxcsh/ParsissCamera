@@ -41,10 +41,10 @@
 #include "igstkParsissTrackerTool.h"
 #include "igstkParsissTracker.h"
 
+#include "ParsissCommunication.h"
 #include "ParsissSimulatedCommunication.h"
 #include "ParsissCameraConfiguration.h"
 #include "ParsissCamera.h"
-
 
 int main(int argc, char* argv[])
 {	
@@ -58,8 +58,8 @@ int main(int argc, char* argv[])
     typedef igstk::TransformObserver      ObserverType;
 
    
-    auto* communication = new ParsissSimulatedCommunication(data_path + "points.csv");
-    auto camera = new ParsissCamera(communication);
+    std::unique_ptr<ParsissCommunication> communication(new ParsissSimulatedCommunication(data_path + "points.csv"));
+    std::unique_ptr<ParsissCamera> camera(new ParsissCamera(std::move(communication)));
 
     const char* tools_name[] = {
         "Accurect-Pointer",
@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
         "Registration-Pointer"
     };
 
-    auto tracker = igstk::ParsissTracker::New();
-    tracker->setParsissCamera(camera);
+    igstk::ParsissTracker::Pointer tracker = igstk::ParsissTracker::New();
+    tracker->setParsissCamera(std::move(camera));
 	
     std::vector<igstk::ParsissTrackerTool::Pointer> tracker_tools;
     std::vector< ObserverType::Pointer> observers;
@@ -90,14 +90,13 @@ int main(int argc, char* argv[])
         tool->RequestAttachToTracker(tracker);
     }
 
-
     tracker->RequestStartTracking();
 
     typedef igstk::Transform TransformType;
     typedef ::itk::Vector<double, 3> VectorType;
     typedef ::itk::Versor<double> VersorType;
 
-    for (unsigned int i = 0; i < 1000000; i++) {
+    for ( int i = 0; i != -1; i++) {
         igstk::PulseGenerator::CheckTimeouts();
 
         TransformType transform;

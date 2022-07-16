@@ -15,8 +15,8 @@ class ParsissTracker : public Tracker
 public:
 	igstkStandardClassTraitsMacro(ParsissTracker, Tracker)
 
-	ParsissTracker &setParsissCamera(parsiss::ParsissCamera *parsissCamera);
-	
+	ParsissTracker &setParsissCamera(std::unique_ptr<parsiss::ParsissCamera> camera);
+
 protected:
 	/** Open communication with the tracking device. */
 	virtual ResultType InternalOpen(void) override;
@@ -51,8 +51,8 @@ protected:
 	virtual ResultType AddTrackerToolToInternalDataContainers(const TrackerToolType* trackerTool) override;
 	
 private:
-	ParsissTracker():m_StateMachine(this) {}
-	parsiss::ParsissCamera *camera;
+	ParsissTracker() : m_StateMachine(this) {}
+	std::unique_ptr<parsiss::ParsissCamera> camera;
 	std::mutex buffer_lock;
 };
 	

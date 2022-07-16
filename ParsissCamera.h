@@ -14,23 +14,22 @@ namespace parsiss
 class ParsissCamera
 {
 public:
-    ParsissCamera(ParsissCommunication *communication);
+    ParsissCamera(std::unique_ptr<ParsissCommunication> communication);
     ~ParsissCamera();
 
-    ParsissCamera &setCommunication(ParsissCommunication *communication);
+    bool registerTool(std::unique_ptr<const ParsissTool> tool);
+    bool removeTool(const std::string &tool_name);
 
-    ParsissCamera &registerTool(const ParsissTool *tool);
-    ParsissCamera &removeTool(const std::string &tool_name);
-
-    std::map<std::string, const ParsissTool *> getTools() const;
+    std::map<std::string, std::unique_ptr<const ParsissTool>> getTools() const;
 
     bool update();
 
     ToolStatus getToolStatus(const std::string &tool_name) const;
 
 private:
-    ParsissCommunication *communication;
-    std::map<std::string, const ParsissTool *> tools;
+    std::unique_ptr<ParsissCommunication> communication;
+    std::unique_ptr<ToolDetection> td;
+
     std::map<std::string, ToolStatus> tools_status;
 
     Frame current_frame;

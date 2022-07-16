@@ -1,4 +1,4 @@
-#include "ParsissCamera.h"
+#include "Parsisscamera.h"
 #include "ParsissSimulatedCommunication.h"
 
 #include "ParsissCameraConfiguration.h"
@@ -18,8 +18,8 @@ int main()
 
     auto _ = translate_path;
 
-    auto *communication = new ParsissSimulatedCommunication(_("/points.csv"));
-    auto camera = ParsissCamera(communication);
+    std::unique_ptr<ParsissCommunication> communication(new ParsissSimulatedCommunication(_("/points.csv")));
+    std::unique_ptr<ParsissCamera> camera(new ParsissCamera(std::move(communication)));
 
     const char *tools_name[] = {
         "Accurect-Pointer",
@@ -29,30 +29,27 @@ int main()
         "Registration-Pointer"
     };
 
-    std::vector<ParsissTool *> tools;
+    std::vector<std::unique_ptr<const ParsissTool>> tools;
     for (int i = 0; i < 5; i++) {
-        tools.push_back(new ParsissTool(
-            tools_name[i],
-            _(std::string("converted/")) + tools_name[i] + std::string(".txt")
-        ));
+        tools.push_back(std::make_unique<ParsissTool>(tools_name[i], _(std::string("converted/")) + tools_name[i] + std::string(".txt")));
     }
 
     for(auto &tool : tools) {
-        camera.registerTool(tool);
+        camera->registerTool(std::move(tool));
     }
 
     std::cout << "Started" << std::endl;
-    while(camera.update()) {
+    while(camera->update()) {
         std::cout << "Updated" << std::endl;
-        for(auto &tool : tools) {
-            std::cout << tool->getName() << ": " << camera.getToolStatus(tool->getName()).visible << std::endl;
+        for(int i = 0; i < 5; ++i) {
+            std::cout << tools_name[i] << ": " << camera->getToolStatus(tools_name[i]).visible << std::endl;
         }
         std::cout << "----------------------------------------------------" << std::endl;
 
-        for(auto &tool : tools) {
-            if(camera.getToolStatus(tool->getName()).visible) {
-                std::cout << tool->getName() << ": " << std::endl;
-                auto transformation = camera.getToolStatus(tool->getName()).transformation;
+        for(int i = 0; i < 5; ++i) {
+            if(camera->getToolStatus(tools_name[i]).visible) {
+                std::cout << tools_name[i] << ": " << std::endl;
+                auto transformation = camera->getToolStatus(tools_name[i]).transformation;
                 for(int i = 0; i < 4; i++) {
                     for(int j = 0; j < 4; j++) {
                         std::cout << transformation->GetElement(i, j) << " ";
@@ -64,8 +61,5 @@ int main()
         }
     }
 
-    delete communication;
-    for(auto &tool : tools) {
-        delete tool;
-    }
+
 }
