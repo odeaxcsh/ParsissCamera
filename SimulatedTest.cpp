@@ -1,4 +1,4 @@
-#include "Parsisscamera.h"
+#include "ParsissCamera.h"
 #include "ParsissSimulatedCommunication.h"
 
 #include "ParsissCameraConfiguration.h"

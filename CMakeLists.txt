@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(ParsissCamera VERSION 0.1.0)
 
-set(CXX_STANDARD "c++17")
-add_compile_options("/std:c++17")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  add_compile_options("/std:c++17")
+else()
+  add_compile_options("-std=c++17")
+endif()
+
 
 include(CTest)
 enable_testing()
