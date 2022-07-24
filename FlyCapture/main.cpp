@@ -61,6 +61,8 @@ int RunSingleCamera(PGRGuid guid)
         PrintError(error);
         return -1;
     }
+       
+    cv::namedWindow("FlyCapture");
 
     FlyCapture2::Image rawImage, convertedImage;
     for (int imageCnt = 0; imageCnt < k_numImages; imageCnt++)
@@ -76,12 +78,14 @@ int RunSingleCamera(PGRGuid guid)
         }
 
         cv::Mat image = cv::Mat(convertedImage.GetRows(), convertedImage.GetCols(), CV_8UC1, convertedImage.GetData());
-        cv::imshow("image", image);
+        cv::imshow("FlyCapture", image);
         int key = cv::waitKey(100);
         if(key == 27 || key == 'q') {
             break;
 		}
     }
+    cv::destroyWindow("FlyCapture");
+
 
     if ((error = cam.StopCapture()) != PGRERROR_OK) {
         PrintError(error);
