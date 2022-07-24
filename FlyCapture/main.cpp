@@ -9,6 +9,15 @@
 
 using namespace FlyCapture2;
 
+
+cv::Mat findCircles(cv::Mat image)
+{
+    double cannyThreshold = 200;
+    cv::Mat canny;
+	cv::Canny(image, canny, cannyThreshold, cannyThreshold * 2);
+    return canny;
+}
+
 void PrintError(Error error) 
 { 
     error.PrintErrorTrace(); 
@@ -19,7 +28,6 @@ int RunSingleCamera(PGRGuid guid)
     const int k_numImages = 3000;
 
     FlyCapture2::Error error;
-
     FlyCapture2::Camera cam;
     if ((error = cam.Connect(&guid)) != PGRERROR_OK) {
         PrintError(error);
@@ -65,8 +73,10 @@ int RunSingleCamera(PGRGuid guid)
     cv::namedWindow("FlyCapture");
 
     FlyCapture2::Image rawImage, convertedImage;
-    for (int imageCnt = 0; imageCnt < k_numImages; imageCnt++)
-    {
+    cv::Mat canny;
+
+	auto start = std::chrono::high_resolution_clock::now();
+    for (int imageCnt = 0; imageCnt < k_numImages; imageCnt++) {
         if ((error = cam.RetrieveBuffer(&rawImage)) != PGRERROR_OK) {
             PrintError(error);
             continue;
@@ -78,14 +88,23 @@ int RunSingleCamera(PGRGuid guid)
         }
 
         cv::Mat image = cv::Mat(convertedImage.GetRows(), convertedImage.GetCols(), CV_8UC1, convertedImage.GetData());
-        cv::imshow("FlyCapture", image);
-        int key = cv::waitKey(100);
+        canny = findCircles(image);
+		
+        cv::imshow("FlyCapture", canny);
+        int key = cv::waitKey(1);
+		
+        auto end = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << "Time: " << duration.count() << " microseconds" << std::endl;
+		std::cout << "FPS: " << (double)1000000 / duration.count() << std::endl;
+		start = std::chrono::high_resolution_clock::now();
+		
         if(key == 27 || key == 'q') {
             break;
 		}
     }
-    cv::destroyWindow("FlyCapture");
 
+    cv::destroyWindow("FlyCapture");
 
     if ((error = cam.StopCapture()) != PGRERROR_OK) {
         PrintError(error);
