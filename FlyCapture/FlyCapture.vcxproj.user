@@ -4,4 +4,8 @@
     <LocalDebuggerEnvironment>Path=$(Path);C:\Program Files (x86)\opencv\x64\vc14\bin</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerEnvironment>Path=$(Path);C:\Program Files (x86)\opencv\x64\vc14\bin</LocalDebuggerEnvironment>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>
