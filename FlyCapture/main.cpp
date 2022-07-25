@@ -4,18 +4,73 @@
 #include "FlyCapture2.h"
 #include <iostream>
 #include <sstream>
+#include <vector>
+
 
 #include <opencv2/opencv.hpp>
 
 using namespace FlyCapture2;
 
 
-cv::Mat findCircles(cv::Mat image)
+std::vector<cv::Point> HoughDetector(cv::Mat image)
+{  
+    const int cannyThreshold = 200;
+    cv::pyrDown(image, image);
+    cv::pyrUp(image, image);
+
+    double resolution = 1;
+    double minDist = 15;
+    int minRadius = 0;
+    int maxRadius = 5;
+
+	
+    std::vector<cv::Vec3f> circles;
+    try {
+        cv::HoughCircles(image, circles, cv::HOUGH_GRADIENT, resolution, minDist, cannyThreshold, 4, minRadius, maxRadius);
+    }
+    catch (cv::Exception& e) {
+        std::cout << e.what() << std::endl;
+    }
+
+    std::vector<cv::Point> result(circles.size());
+    for (int i = 0; i < circles.size(); ++i) {
+		result[i] = cv::Point(circles[i][0], circles[i][1]);
+		
+    }
+
+    return result;
+}
+
+
+std::vector<cv::Point> CannyDetector(cv::Mat image)
 {
-    double cannyThreshold = 200;
     cv::Mat canny;
-	cv::Canny(image, canny, cannyThreshold, cannyThreshold * 2);
-    return canny;
+
+    double cannyThreshold = 100;
+    cv::pyrDown(image, image);
+    cv::pyrUp(image, image);
+
+    cv::Canny(image, canny, cannyThreshold, cannyThreshold * 2);
+
+    cv::imshow("Canny", canny);
+	
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(canny, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+	cv::drawContours(image, contours, -1, cv::Scalar(0,0,255), 2);
+	cv::imshow("Contours", image);
+
+    std::vector<cv::Point> markers(contours.size());
+    for (int i = 0; i < contours.size(); i++) {
+        try {
+            auto ellipse = cv::fitEllipse(contours[i]);
+            markers[i] = ellipse.center;
+        }
+        catch (cv::Exception e) {
+            std::cout << "Error: " << e.what() << std::endl;
+        }
+    }
+
+    return markers;
 }
 
 void PrintError(Error error) 
@@ -73,7 +128,7 @@ int RunSingleCamera(PGRGuid guid)
     cv::namedWindow("FlyCapture");
 
     FlyCapture2::Image rawImage, convertedImage;
-    cv::Mat canny;
+    cv::Mat toDraw;
 
 	auto start = std::chrono::high_resolution_clock::now();
     for (int imageCnt = 0; imageCnt < k_numImages; imageCnt++) {
@@ -88,9 +143,20 @@ int RunSingleCamera(PGRGuid guid)
         }
 
         cv::Mat image = cv::Mat(convertedImage.GetRows(), convertedImage.GetCols(), CV_8UC1, convertedImage.GetData());
-        canny = findCircles(image);
-		
-        cv::imshow("FlyCapture", canny);
+        cv::resize(image, toDraw, cv::Size(), 0.5, 0.5);
+
+        image = toDraw;
+        auto circles = HoughDetector(toDraw);
+
+        cv::resize(image, image, cv::Size(), 0.5, 0.5);
+
+        for (size_t i = 0; i < circles.size(); i++) {
+            cv::Point center = circles[i];
+            cv::circle(toDraw, center, 1, cv::Scalar(0, 100, 100), 3, cv::LINE_AA);
+            circle(toDraw, center, 10, cv::Scalar(255, 0, 255), 3, cv::LINE_AA);
+        }
+
+        cv::imshow("FlyCapture", toDraw);
         int key = cv::waitKey(1);
 		
         auto end = std::chrono::high_resolution_clock::now();
